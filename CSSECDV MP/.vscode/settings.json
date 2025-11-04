@@ -1,0 +1,9 @@
+{
+    // Include external jars so the VS Code Java language server and editor can resolve imports
+    "java.project.referencedLibraries": [
+        "jbcrypt-0.4.jar",
+        "sqlite-jdbc-3.23.1.jar"
+    ],
+    // Keep VS Code build config in sync automatically
+    "java.configuration.updateBuildConfiguration": "automatic"
+}
