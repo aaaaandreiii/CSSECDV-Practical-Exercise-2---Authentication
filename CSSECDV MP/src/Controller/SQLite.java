@@ -203,7 +203,7 @@ public class SQLite {
 //      pstmt.executeUpdate();
     public void addUser(String username, String password) {
         String sql = "INSERT INTO users(username, password, role) VALUES(?, ?, ?)";
-        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
+        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt(12));
 
         try (Connection conn = DriverManager.getConnection(driverURL);
             PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -317,7 +317,7 @@ public class SQLite {
     
     public void addUser(String username, String password, int role) {
         String sql = "INSERT INTO users(username, password, role) VALUES(?, ?, ?)";
-        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
+        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt(12));
 
         try (Connection conn = DriverManager.getConnection(driverURL);
             PreparedStatement pstmt = conn.prepareStatement(sql)) {
