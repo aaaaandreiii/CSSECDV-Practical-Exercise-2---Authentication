@@ -12,6 +12,8 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 
+import org.mindrot.jbcrypt.BCrypt; 
+
 public class SQLite {
     
     public int DEBUG_MODE = 0;
@@ -183,7 +185,7 @@ public class SQLite {
         String sql = "INSERT INTO product(name, stock, price) VALUES(?, ?, ?)";
         
         try (Connection conn = DriverManager.getConnection(driverURL);
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, name);
             pstmt.setInt(2, stock);
             pstmt.setDouble(3, price);
@@ -199,15 +201,15 @@ public class SQLite {
 //      pstmt.setString(1, username);
 //      pstmt.setString(2, password);
 //      pstmt.executeUpdate();
-    public void addUser(String username, String password, String role) {
+    public void addUser(String username, String password) {
         String sql = "INSERT INTO users(username, password, role) VALUES(?, ?, ?)";
+        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
 
         try (Connection conn = DriverManager.getConnection(driverURL);
             PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, username);
-            pstmt.setString(2, password);
-            pstmt.setString(3, role);
+            pstmt.setString(2, hashedPassword);
 
             pstmt.executeUpdate();
 
@@ -218,68 +220,78 @@ public class SQLite {
 
     
     
-    public ArrayList<History> getHistory(){
+    public ArrayList<History> getHistory() {
         String sql = "SELECT id, username, name, stock, timestamp FROM history";
-        ArrayList<History> histories = new ArrayList<History>();
-        
+        ArrayList<History> histories = new ArrayList<>();
+
         try (Connection conn = DriverManager.getConnection(driverURL);
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(sql)){
-            
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            ResultSet rs = pstmt.executeQuery()) {
+
             while (rs.next()) {
-                histories.add(new History(rs.getInt("id"),
-                                   rs.getString("username"),
-                                   rs.getString("name"),
-                                   rs.getInt("stock"),
-                                   rs.getString("timestamp")));
+                histories.add(new History(
+                    rs.getInt("id"),
+                    rs.getString("username"),
+                    rs.getString("name"),
+                    rs.getInt("stock"),
+                    rs.getString("timestamp")
+                ));
             }
         } catch (Exception ex) {
-            System.out.print(ex);
+            System.out.println("Error fetching history: " + ex.getMessage());
         }
         return histories;
     }
+
     
-    public ArrayList<Logs> getLogs(){
-        String sql = "SELECT id, event, username, desc, timestamp FROM logs";
-        ArrayList<Logs> logs = new ArrayList<Logs>();
-        
+    public ArrayList<Logs> getLogs() {
+        String sql = "SELECT id, event, username, `desc`, timestamp FROM logs";
+        ArrayList<Logs> logs = new ArrayList<>();
+
         try (Connection conn = DriverManager.getConnection(driverURL);
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(sql)){
-            
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            ResultSet rs = pstmt.executeQuery()) {
+
             while (rs.next()) {
-                logs.add(new Logs(rs.getInt("id"),
-                                   rs.getString("event"),
-                                   rs.getString("username"),
-                                   rs.getString("desc"),
-                                   rs.getString("timestamp")));
+                logs.add(new Logs(
+                    rs.getInt("id"),
+                    rs.getString("event"),
+                    rs.getString("username"),
+                    rs.getString("desc"),
+                    rs.getString("timestamp")
+                ));
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            System.out.println("Error fetching logs: " + ex.getMessage());
         }
         return logs;
     }
+
     
-    public ArrayList<Product> getProduct(){
+    public ArrayList<Product> getProduct() {
         String sql = "SELECT id, name, stock, price FROM product";
-        ArrayList<Product> products = new ArrayList<Product>();
-        
+        ArrayList<Product> products = new ArrayList<>();
+
         try (Connection conn = DriverManager.getConnection(driverURL);
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(sql)){
-            
+            PreparedStatement pstmt = conn.prepareStatement(sql);
+            ResultSet rs = pstmt.executeQuery()) {
+
             while (rs.next()) {
-                products.add(new Product(rs.getInt("id"),
-                                   rs.getString("name"),
-                                   rs.getInt("stock"),
-                                   rs.getFloat("price")));
+                products.add(new Product(
+                    rs.getInt("id"),
+                    rs.getString("name"),
+                    rs.getInt("stock"),
+                    rs.getFloat("price")
+                ));
             }
         } catch (Exception ex) {
-            System.out.print(ex);
+            System.out.println("Error fetching products: " + ex.getMessage());
         }
         return products;
     }
+
     
+    // old get users
     public ArrayList<User> getUsers(){
         String sql = "SELECT id, username, password, role, locked FROM users";
 
@@ -293,7 +305,8 @@ public class SQLite {
                 rs.getString("username"), 
                 rs.getString("password"), 
                 rs.getInt("role"), 
-                rs.getInt("locked")));
+                rs.getInt("locked"),
+                rs.getInt("failed_attempts")));
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -304,10 +317,12 @@ public class SQLite {
     
     public void addUser(String username, String password, int role) {
         String sql = "INSERT INTO users(username, password, role) VALUES(?, ?, ?)";
+        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
+
         try (Connection conn = DriverManager.getConnection(driverURL);
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, username);
-            pstmt.setString(2, password);
+            pstmt.setString(2, hashedPassword);
             pstmt.setInt(3, role);
             pstmt.executeUpdate();
         } catch (Exception ex) {
@@ -319,7 +334,7 @@ public class SQLite {
         String sql = "DELETE FROM users WHERE username = ?";
 
         try (Connection conn = DriverManager.getConnection(driverURL);
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, username);
             pstmt.executeUpdate();
             System.out.println("User " + username + " has been deleted.");
@@ -334,7 +349,7 @@ public class SQLite {
         Product product = null;
 
         try (Connection conn = DriverManager.getConnection(driverURL);
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, name);
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
@@ -345,5 +360,50 @@ public class SQLite {
         }
 
         return product;
+    }
+
+    // --- NEW SECURE METHODS FOR LOGIN AND ACCOUNT LOCKOUT ---
+
+    public User getUserByUsername(String username) {
+        String sql = "SELECT * FROM users WHERE username = ?";
+        User user = null;
+        try (Connection conn = DriverManager.getConnection(driverURL);
+            PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                 user = new User(rs.getInt("id"),
+                                rs.getString("username"),
+                                rs.getString("password"),
+                                rs.getInt("role"),
+                                rs.getInt("locked"),
+                                rs.getInt("failed_attempts"));
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return user;
+    }
+
+    public void handleFailedLogin(String username) {
+        String sql = "UPDATE users SET failed_attempts = failed_attempts + 1, locked = CASE WHEN failed_attempts >= 4 THEN 1 ELSE 0 END WHERE username = ?";
+        try (Connection conn = DriverManager.getConnection(driverURL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            pstmt.executeUpdate();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public void resetFailedLogin(String username) {
+        String sql = "UPDATE users SET failed_attempts = 0, locked = 0 WHERE username = ?";
+        try (Connection conn = DriverManager.getConnection(driverURL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            pstmt.executeUpdate();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 }
