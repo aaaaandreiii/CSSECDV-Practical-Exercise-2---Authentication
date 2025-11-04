@@ -2,6 +2,7 @@
 package View;
 
 import Model.User;
+import java.util.Arrays;
 
 import javax.swing.JOptionPane;
 
@@ -120,6 +121,9 @@ public class Login extends javax.swing.JPanel {
             sqlite.handleFailedLogin(username);
             JOptionPane.showMessageDialog(frame, "Invalid username or password.", "Login Failed", JOptionPane.ERROR_MESSAGE);
         }
+
+        // clear pass field
+        Arrays.fill(passwordText.toCharArray(), '0');
 
 
     }//GEN-LAST:event_loginBtnActionPerformed
