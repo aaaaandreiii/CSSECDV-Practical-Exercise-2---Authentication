@@ -10,6 +10,9 @@ import Model.User;
 
 public class Frame extends javax.swing.JFrame {
 
+    // added new variable to hold current user info
+    private User currentUser;
+
     public Frame() {
         initComponents();
     }
