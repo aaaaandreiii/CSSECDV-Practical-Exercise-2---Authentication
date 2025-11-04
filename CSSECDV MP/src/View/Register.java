@@ -1,6 +1,8 @@
 
 package View;
 
+import org.mindrot.jbcrypt.BCrypt; 
+
 public class Register extends javax.swing.JPanel {
 
     public Frame frame;
