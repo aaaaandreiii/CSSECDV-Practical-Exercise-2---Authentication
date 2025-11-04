@@ -1,6 +1,14 @@
 
 package View;
 
+import Model.User;
+
+import javax.swing.JOptionPane;
+
+import org.mindrot.jbcrypt.BCrypt;
+
+import Controller.SQLite; 
+
 public class Login extends javax.swing.JPanel {
 
     public Frame frame;
@@ -15,7 +23,7 @@ public class Login extends javax.swing.JPanel {
 
         jLabel1 = new javax.swing.JLabel();
         usernameFld = new javax.swing.JTextField();
-        passwordFld = new javax.swing.JTextField();
+        passwordFld = new javax.swing.JPasswordField();
         registerBtn = new javax.swing.JButton();
         loginBtn = new javax.swing.JButton();
 
@@ -83,7 +91,37 @@ public class Login extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
     private void loginBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loginBtnActionPerformed
-        frame.mainNav();
+        String username = usernameFld.getText();
+        String passwordText = passwordFld.getText(); 
+
+        SQLite sqlite = frame.main.sqlite;
+
+        if (username.trim().isEmpty() || passwordText.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(frame, "Username and password cannot be empty.", "Login Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        User user = sqlite.getUserByUsername(username); //utilizes new func
+
+        // check if user exists and if account is locked
+        if (user == null) {
+            JOptionPane.showMessageDialog(frame, "Invalid username or password.", "Login Failed", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        if (user.getLocked() == 1) {
+            JOptionPane.showMessageDialog(frame, "This account is locked due to too many failed login attempts.", "Account Locked", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        if (BCrypt.checkpw(passwordText, user.getPassword())) {
+            sqlite.resetFailedLogin(username);
+            JOptionPane.showMessageDialog(frame, "Login successful!");
+            frame.mainNav(user);
+        } else {
+            sqlite.handleFailedLogin(username);
+            JOptionPane.showMessageDialog(frame, "Invalid username or password.", "Login Failed", JOptionPane.ERROR_MESSAGE);
+        }
+
+
     }//GEN-LAST:event_loginBtnActionPerformed
 
     private void registerBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_registerBtnActionPerformed

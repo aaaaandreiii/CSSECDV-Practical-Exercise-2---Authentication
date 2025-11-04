@@ -6,6 +6,8 @@ import java.awt.CardLayout;
 import java.awt.Dimension;
 import javax.swing.WindowConstants;
 
+import Model.User;
+
 public class Frame extends javax.swing.JFrame {
 
     public Frame() {
@@ -244,8 +246,10 @@ public class Frame extends javax.swing.JFrame {
         this.setVisible(true);
     }
     
-    public void mainNav(){
+    public void mainNav(User user){
         frameView.show(Container, "homePnl");
+
+        // code to edit navigation based on role
     }
     
     public void loginNav(){
