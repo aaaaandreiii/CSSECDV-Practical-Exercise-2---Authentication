@@ -7,9 +7,36 @@
 <!-- the Compile on Save feature is turned off for the project. -->
 <!-- You can turn off the Compile on Save (or Deploy on Save) setting -->
 <!-- in the project's Project Properties dialog box.-->
-<project name="CSSECDV" default="default" basedir=".">
+<project name="CSSECDV" default="run" basedir=".">
+    <property name="lib.dir" value="lib"/>
     <description>Builds, tests, and runs the project CSSECDV.</description>
     <import file="nbproject/build-impl.xml"/>
+
+    <path id="cp">
+        <pathelement location="build/classes"/>
+        <fileset dir="${lib.dir}">
+        <!-- match Maven versions you used -->
+        <include name="sqlite-jdbc-3.45.3.0.jar"/>
+        <include name="slf4j-api-2.0.13.jar"/>
+        <include name="slf4j-simple-2.0.13.jar"/>
+        </fileset>
+    </path>
+
+    <target name="compile">
+        <mkdir dir="build/classes"/>
+        <!-- Use the same Java level as the POM -->
+        <javac srcdir="src" destdir="build/classes"
+            includeantruntime="false"
+            classpathref="cp"
+            release="17"/>
+    </target>
+
+    <target name="run" depends="compile">
+        <java classname="Controller.Main" fork="true" classpathref="cp">
+        <!-- Mirror the Maven JVM args -->
+        <jvmarg value="--enable-native-access=ALL-UNNAMED"/>
+        </java>
+    </target>
     <!--
 
     There exist several targets which are by default empty and which can be 
