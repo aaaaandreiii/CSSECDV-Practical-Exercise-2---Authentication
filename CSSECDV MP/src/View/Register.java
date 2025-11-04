@@ -1,6 +1,10 @@
 
 package View;
 
+import java.util.Arrays;
+
+import javax.swing.JOptionPane;
+
 import org.mindrot.jbcrypt.BCrypt; 
 
 public class Register extends javax.swing.JPanel {
@@ -100,6 +104,38 @@ public class Register extends javax.swing.JPanel {
 
     private void registerBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_registerBtnActionPerformed
         frame.registerAction(usernameFld.getText(), passwordFld.getText(), confpassFld.getText());
+
+        String username = usernameFld.getText();
+        char[] password = passwordFld.getText().toCharArray();
+        char[] confPassword = confpassFld.getText().toCharArray();
+
+        if (username.trim().isEmpty() || password.length == 0 || confPassword.length == 0) {
+            JOptionPane.showMessageDialog(frame, "All fields are required.", "Validation Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        if (!Arrays.equals(password, confPassword)) {
+            JOptionPane.showMessageDialog(frame, "Passwords do not match.", "Validation Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // REGEX UTILIZATION FOR PASSWORD POLICIES
+        String passwordStr = new String(password);
+        if (passwordStr.length() < 8 || !passwordStr.matches(".*[A-Z].*") || !passwordStr.matches(".*[a-z].*") || !passwordStr.matches(".*\\d.*")) {
+            JOptionPane.showMessageDialog(frame, "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number.", "Password Policy", JOptionPane.ERROR_MESSAGE);
+            return;
+        }       
+
+        // hashed pw
+        String hashedPassword = BCrypt.hashpw(passwordStr, BCrypt.gensalt());
+        frame.main.sqlite.addUser(username, hashedPassword, 2);
+
+        JOptionPane.showMessageDialog(frame, "Registration successful! Please log in.", "Success", JOptionPane.INFORMATION_MESSAGE);
+
+        // clear fields
+        Arrays.fill(password, '0');
+        Arrays.fill(confPassword, '0');
+
         frame.loginNav();
     }//GEN-LAST:event_registerBtnActionPerformed
 
