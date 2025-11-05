@@ -70,4 +70,16 @@
     nbproject/build-impl.xml file. 
 
     -->
+
+    <!-- sqlite connectivity + bcrypt jar -->
+    <path id="project.libraries.path">
+        <pathelement location="sqlite-jdbc-3.23.1.jar"/>
+        <pathelement location="jbcrypt-0.4.jar"/>
+    </path>
+
+    <pathconvert property="project.libraries.classpath" refid="project.libraries.path" pathsep="${path.separator}"/>
+
+    <property name="javac.classpath" value="${javac.classpath}:${project.libraries.classpath}"/>
+    <property name="run.classpath" value="${build.classes.dir}:${run.classpath}:${project.libraries.classpath}"/>
+
 </project>

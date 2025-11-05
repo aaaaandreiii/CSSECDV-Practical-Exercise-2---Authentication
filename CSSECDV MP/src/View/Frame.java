@@ -6,7 +6,12 @@ import java.awt.CardLayout;
 import java.awt.Dimension;
 import javax.swing.WindowConstants;
 
+import Model.User;
+
 public class Frame extends javax.swing.JFrame {
+
+    // added new variable to hold current user info
+    private User currentUser;
 
     public Frame() {
         initComponents();
@@ -200,6 +205,7 @@ public class Frame extends javax.swing.JFrame {
     }//GEN-LAST:event_clientBtnActionPerformed
 
     private void logoutBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logoutBtnActionPerformed
+        this.currentUser = null;
         frameView.show(Container, "loginPnl");
     }//GEN-LAST:event_logoutBtnActionPerformed
 
@@ -244,8 +250,51 @@ public class Frame extends javax.swing.JFrame {
         this.setVisible(true);
     }
     
-    public void mainNav(){
-        frameView.show(Container, "homePnl");
+    public void mainNav(User user){
+        frameView.show(Container, "homePnl"); 
+
+        currentUser = user;
+
+        // all false at start for principle of least privilege
+        adminBtn.setVisible(false);
+        managerBtn.setVisible(false);
+        staffBtn.setVisible(false);
+        clientBtn.setVisible(false);
+
+        switch (user.getRole()) {
+            case 5: // Administrator
+                adminBtn.setVisible(true);
+                managerBtn.setVisible(true);
+                staffBtn.setVisible(true);
+                clientBtn.setVisible(true);
+                contentView.show(Content, "adminHomePnl"); // Set default view
+                break;
+
+            case 4: // Manager
+                managerBtn.setVisible(true);
+                staffBtn.setVisible(true);
+                clientBtn.setVisible(true);
+                contentView.show(Content, "managerHomePnl");
+                break;
+
+            case 3: // Staff
+                staffBtn.setVisible(true);
+                clientBtn.setVisible(true);
+                contentView.show(Content, "staffHomePnl");
+                break;
+
+            case 2: // Client
+                clientBtn.setVisible(true);
+                contentView.show(Content, "clientHomePnl");
+                break;
+
+            default: // Handles Disabled (1) or any unknown/invalid roles
+                currentUser = null;
+                user = null;
+                loginNav();
+                break;
+        }
+        // code to edit navigation based on role
     }
     
     public void loginNav(){
@@ -256,9 +305,10 @@ public class Frame extends javax.swing.JFrame {
         frameView.show(Container, "registerPnl");
     }
     
-    public void registerAction(String username, String password, String confpass){
-        main.sqlite.addUser(username, password);
-    }
+    // DELETE, commented to simulate deletion
+    // public void registerAction(String username, String password, String confpass){
+    //     main.sqlite.addUser(username, password, );
+    // }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel Container;

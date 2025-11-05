@@ -1,6 +1,15 @@
 
 package View;
 
+import Model.User;
+import java.util.Arrays;
+
+import javax.swing.JOptionPane;
+
+import org.mindrot.jbcrypt.BCrypt;
+
+import Controller.SQLite; 
+
 public class Login extends javax.swing.JPanel {
 
     public Frame frame;
@@ -15,7 +24,7 @@ public class Login extends javax.swing.JPanel {
 
         jLabel1 = new javax.swing.JLabel();
         usernameFld = new javax.swing.JTextField();
-        passwordFld = new javax.swing.JTextField();
+        passwordFld = new javax.swing.JPasswordField();
         registerBtn = new javax.swing.JButton();
         loginBtn = new javax.swing.JButton();
 
@@ -83,7 +92,48 @@ public class Login extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
     private void loginBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loginBtnActionPerformed
-        frame.mainNav();
+        String username = usernameFld.getText();
+        char[] passwordText = passwordFld.getPassword(); 
+
+        SQLite sqlite = frame.main.sqlite;
+
+        if (username.trim().isEmpty() || passwordText.length == 0) {
+            JOptionPane.showMessageDialog(frame, "Username and password cannot be empty.", "Login Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        User user = sqlite.getUserByUsername(username); //utilizes new func
+
+        // check if user exists and if account is locked
+        if (user == null) {
+            sqlite.addLogs("WARNING", username, "Failed login attempt: User does not exist.", new java.sql.Timestamp(new java.util.Date().getTime()).toString());
+            JOptionPane.showMessageDialog(frame, "Invalid username or password.", "Login Failed", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        if (user.getLocked() == 1) {
+            sqlite.addLogs("ALERT", username, "Login attempt on locked account.", new java.sql.Timestamp(new java.util.Date().getTime()).toString());
+            JOptionPane.showMessageDialog(frame, "This account is locked due to too many failed login attempts.", "Account Locked", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        String password = new String(passwordText);
+
+        if (BCrypt.checkpw(password, user.getPassword())) {
+            sqlite.resetFailedLogin(username);
+            sqlite.addLogs("INFO", username, "User successfully logged in.", new java.sql.Timestamp(new java.util.Date().getTime()).toString());
+            JOptionPane.showMessageDialog(frame, "Login successful!");
+            frame.mainNav(user);
+        } else {
+            sqlite.handleFailedLogin(username);
+            sqlite.addLogs("WARNING", username, "Failed login attempt: Incorrect password.", new java.sql.Timestamp(new java.util.Date().getTime()).toString());
+            JOptionPane.showMessageDialog(frame, "Invalid username or password.", "Login Failed", JOptionPane.ERROR_MESSAGE);
+        }
+
+        // clear pass field
+        Arrays.fill(passwordText, '0');
+        passwordFld.setText("");
+        password = null;
+
+
     }//GEN-LAST:event_loginBtnActionPerformed
 
     private void registerBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_registerBtnActionPerformed
@@ -94,7 +144,7 @@ public class Login extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JButton loginBtn;
-    private javax.swing.JTextField passwordFld;
+    private javax.swing.JPasswordField passwordFld;
     private javax.swing.JButton registerBtn;
     private javax.swing.JTextField usernameFld;
     // End of variables declaration//GEN-END:variables

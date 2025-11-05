@@ -6,18 +6,20 @@ public class User {
     private String password;
     private int role = 2;
     private int locked = 0;
+    private int failed_attempts = 0;
 
     public User(String username, String password){
         this.username = username;
         this.password = password;
     }
     
-    public User(int id, String username, String password, int role, int locked){
+    public User(int id, String username, String password, int role, int locked, int failed_attempts){
         this.id = id;
         this.username = username;
         this.password = password;
         this.role = role;
         this.locked = locked;
+        this.failed_attempts = failed_attempts;
     }
     
     public int getId() {
@@ -48,6 +50,10 @@ public class User {
         return role;
     }
 
+    public int getFailed_attempts() {
+        return failed_attempts;
+    }
+
     public void setRole(int role) {
         this.role = role;
     }
@@ -58,5 +64,13 @@ public class User {
 
     public void setLocked(int locked) {
         this.locked = locked;
+    }
+
+    public void setFailed_attempts(int failed_attempts) {
+        this.failed_attempts = failed_attempts;
+    }
+
+    public void incrementFailedAttempts() {
+        this.failed_attempts++;
     }
 }
