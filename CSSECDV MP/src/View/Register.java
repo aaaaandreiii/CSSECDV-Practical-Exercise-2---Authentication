@@ -108,6 +108,7 @@ public class Register extends javax.swing.JPanel {
         String username = usernameFld.getText();
         char[] password = passwordFld.getText().toCharArray();
         char[] confPassword = confpassFld.getText().toCharArray();
+        boolean success = false;
 
         if (username.trim().isEmpty() || password.length == 0 || confPassword.length == 0) {
             JOptionPane.showMessageDialog(frame, "All fields are required.", "Validation Error", JOptionPane.ERROR_MESSAGE);
@@ -127,16 +128,25 @@ public class Register extends javax.swing.JPanel {
         }       
 
         // hashed pw
-        String hashedPassword = BCrypt.hashpw(passwordStr, BCrypt.gensalt());
-        frame.main.sqlite.addUser(username, hashedPassword, 2);
+        try{
+            success = frame.main.sqlite.addUser(username, passwordStr, 2);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(frame, "Error during registration: " + e.getMessage(), "Registration Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
+        if(success == true) {
+            JOptionPane.showMessageDialog(frame, "Registration successful! Please log in.", "Success", JOptionPane.INFORMATION_MESSAGE);
 
-        JOptionPane.showMessageDialog(frame, "Registration successful! Please log in.", "Success", JOptionPane.INFORMATION_MESSAGE);
+            // clear fields
+            Arrays.fill(password, '0');
+            Arrays.fill(confPassword, '0');
 
-        // clear fields
-        Arrays.fill(password, '0');
-        Arrays.fill(confPassword, '0');
-
-        frame.loginNav();
+            frame.loginNav();
+        } else {
+            JOptionPane.showMessageDialog(frame, "Username '" + username + "' is already taken. Please choose another.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
+        }
+        
     }//GEN-LAST:event_registerBtnActionPerformed
 
     private void backBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backBtnActionPerformed

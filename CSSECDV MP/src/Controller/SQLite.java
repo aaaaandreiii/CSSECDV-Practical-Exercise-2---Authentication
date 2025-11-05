@@ -201,20 +201,38 @@ public class SQLite {
 //      pstmt.setString(1, username);
 //      pstmt.setString(2, password);
 //      pstmt.executeUpdate();
-    public void addUser(String username, String password) {
+    public boolean addUser(String username, String password) {
         String sql = "INSERT INTO users(username, password, role) VALUES(?, ?, ?)";
+        String checkSql = "SELECT 1 FROM users WHERE username = ?";
         String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt(12));
 
-        try (Connection conn = DriverManager.getConnection(driverURL);
-            PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = DriverManager.getConnection(driverURL)) {
+            PreparedStatement checkStmt = conn.prepareStatement(checkSql);
+            PreparedStatement insertStmt = conn.prepareStatement(sql) ;
 
-            pstmt.setString(1, username);
-            pstmt.setString(2, hashedPassword);
+            // Check if username exists
+            checkStmt.setString(1, username);
+            try (ResultSet rs = checkStmt.executeQuery()) {
+                if (rs.next()) {
+                    System.err.println("❌ User already exists: " + username);
+                    return false;
+                }
+            }
 
-            pstmt.executeUpdate();
+            insertStmt.setString(1, username);
+            insertStmt.setString(2, hashedPassword);
+            insertStmt.executeUpdate();
+
+            System.out.println("✅ User added successfully: " + username);
+            return true;
 
         } catch (Exception ex) {
-            System.out.println("Error inserting user: " + ex.getMessage());
+            if (ex.getMessage().contains("SQLITE_CONSTRAINT_UNIQUE")) {
+                System.err.println("Registration failed: Username '" + username + "' already exists.");
+            } else {
+                ex.printStackTrace();
+            }
+            return false; 
         }
     }
 
@@ -315,18 +333,39 @@ public class SQLite {
         return users;
     }
     
-    public void addUser(String username, String password, int role) {
+    public boolean addUser(String username, String password, int role) {
         String sql = "INSERT INTO users(username, password, role) VALUES(?, ?, ?)";
+        String checkSql = "SELECT 1 FROM users WHERE username = ?";
         String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt(12));
 
-        try (Connection conn = DriverManager.getConnection(driverURL);
-            PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, username);
-            pstmt.setString(2, hashedPassword);
-            pstmt.setInt(3, role);
-            pstmt.executeUpdate();
+        try (Connection conn = DriverManager.getConnection(driverURL)) {
+            // check if username is unique
+            PreparedStatement checkStmt = conn.prepareStatement(checkSql);
+            PreparedStatement insertStmt = conn.prepareStatement(sql) ;
+
+            // Check if username exists
+            checkStmt.setString(1, username);
+            try (ResultSet rs = checkStmt.executeQuery()) {
+                if (rs.next()) {
+                    System.err.println("❌ User already exists: " + username);
+                    return false;
+                }
+            }
+
+            insertStmt.setString(1, username);
+            insertStmt.setString(2, hashedPassword);
+            insertStmt.setInt(3, role);
+            insertStmt.executeUpdate();
+
+            System.out.println("✅ User added successfully: " + username);
+            return true;
         } catch (Exception ex) {
-            ex.printStackTrace();
+            if (ex.getMessage().contains("SQLITE_CONSTRAINT_UNIQUE")) {
+                System.err.println("Registration failed: Username '" + username + "' already exists.");
+            } else {
+                ex.printStackTrace();
+            }
+            return false;
         }
     }
     
