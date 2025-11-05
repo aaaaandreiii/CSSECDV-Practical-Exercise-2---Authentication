@@ -14,10 +14,21 @@ import java.util.ArrayList;
 
 import org.mindrot.jbcrypt.BCrypt; 
 
+// for testing
+import java.io.File;
+
 public class SQLite {
     
     public int DEBUG_MODE = 0;
     String driverURL = "jdbc:sqlite:" + "database.db";
+
+    public SQLite() {
+        // print fullpath to db for debugging
+        File dbFile = new File("database.db");
+        System.out.println("---------------------------------------------------------");
+        System.out.println("Attempting to connect to database at: " + dbFile.getAbsolutePath());
+        System.out.println("---------------------------------------------------------");
+    }
     
     public void createNewDatabase() {
         try (Connection conn = DriverManager.getConnection(driverURL)) {
@@ -89,7 +100,8 @@ public class SQLite {
             + " username TEXT NOT NULL UNIQUE,\n"
             + " password TEXT NOT NULL,\n"
             + " role INTEGER DEFAULT 2,\n"
-            + " locked INTEGER DEFAULT 0\n"
+            + " locked INTEGER DEFAULT 0,\n"
+            + " failed_attempts INTEGER NOT NULL DEFAULT 0\n"
             + ");";
 
         try (Connection conn = DriverManager.getConnection(driverURL);
@@ -311,13 +323,13 @@ public class SQLite {
     
     // old get users
     public ArrayList<User> getUsers(){
-        String sql = "SELECT id, username, password, role, locked FROM users";
+        String sql = "SELECT id, username, password, role, locked, failed_attempts FROM users";
 
         ArrayList<User> users = new ArrayList<>();
 
         try (Connection conn = DriverManager.getConnection(driverURL);
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 users.add(new User(rs.getInt("id"), 
                 rs.getString("username"), 
