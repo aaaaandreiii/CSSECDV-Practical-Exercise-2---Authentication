@@ -105,20 +105,24 @@ public class Login extends javax.swing.JPanel {
 
         // check if user exists and if account is locked
         if (user == null) {
+            sqlite.addLogs("WARNING", username, "Failed login attempt: User does not exist.", new java.sql.Timestamp(new java.util.Date().getTime()).toString());
             JOptionPane.showMessageDialog(frame, "Invalid username or password.", "Login Failed", JOptionPane.ERROR_MESSAGE);
             return;
         }
         if (user.getLocked() == 1) {
+            sqlite.addLogs("ALERT", username, "Login attempt on locked account.", new java.sql.Timestamp(new java.util.Date().getTime()).toString());
             JOptionPane.showMessageDialog(frame, "This account is locked due to too many failed login attempts.", "Account Locked", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         if (BCrypt.checkpw(passwordText, user.getPassword())) {
             sqlite.resetFailedLogin(username);
+            sqlite.addLogs("INFO", username, "User successfully logged in.", new java.sql.Timestamp(new java.util.Date().getTime()).toString());
             JOptionPane.showMessageDialog(frame, "Login successful!");
             frame.mainNav(user);
         } else {
             sqlite.handleFailedLogin(username);
+            sqlite.addLogs("WARNING", username, "Failed login attempt: Incorrect password.", new java.sql.Timestamp(new java.util.Date().getTime()).toString());
             JOptionPane.showMessageDialog(frame, "Invalid username or password.", "Login Failed", JOptionPane.ERROR_MESSAGE);
         }
 

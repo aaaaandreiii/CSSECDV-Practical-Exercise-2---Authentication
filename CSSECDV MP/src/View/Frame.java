@@ -205,6 +205,7 @@ public class Frame extends javax.swing.JFrame {
     }//GEN-LAST:event_clientBtnActionPerformed
 
     private void logoutBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logoutBtnActionPerformed
+        this.currentUser = null;
         frameView.show(Container, "loginPnl");
     }//GEN-LAST:event_logoutBtnActionPerformed
 
@@ -250,8 +251,49 @@ public class Frame extends javax.swing.JFrame {
     }
     
     public void mainNav(User user){
-        frameView.show(Container, "homePnl");
+        frameView.show(Container, "homePnl"); 
 
+        currentUser = user;
+
+        // all false at start for principle of least privilege
+        adminBtn.setVisible(false);
+        managerBtn.setVisible(false);
+        staffBtn.setVisible(false);
+        clientBtn.setVisible(false);
+
+        switch (user.getRole()) {
+            case 5: // Administrator
+                adminBtn.setVisible(true);
+                managerBtn.setVisible(true);
+                staffBtn.setVisible(true);
+                clientBtn.setVisible(true);
+                contentView.show(Content, "adminHomePnl"); // Set default view
+                break;
+
+            case 4: // Manager
+                managerBtn.setVisible(true);
+                staffBtn.setVisible(true);
+                clientBtn.setVisible(true);
+                contentView.show(Content, "managerHomePnl");
+                break;
+
+            case 3: // Staff
+                staffBtn.setVisible(true);
+                clientBtn.setVisible(true);
+                contentView.show(Content, "staffHomePnl");
+                break;
+
+            case 2: // Client
+                clientBtn.setVisible(true);
+                contentView.show(Content, "clientHomePnl");
+                break;
+
+            default: // Handles Disabled (1) or any unknown/invalid roles
+                currentUser = null;
+                user = null;
+                loginNav();
+                break;
+        }
         // code to edit navigation based on role
     }
     
