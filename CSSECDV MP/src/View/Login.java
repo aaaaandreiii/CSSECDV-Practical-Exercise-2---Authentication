@@ -93,11 +93,11 @@ public class Login extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
     private void loginBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loginBtnActionPerformed
         String username = usernameFld.getText();
-        String passwordText = passwordFld.getText(); 
+        char[] passwordText = passwordFld.getPassword(); 
 
         SQLite sqlite = frame.main.sqlite;
 
-        if (username.trim().isEmpty() || passwordText.trim().isEmpty()) {
+        if (username.trim().isEmpty() || passwordText.length == 0) {
             JOptionPane.showMessageDialog(frame, "Username and password cannot be empty.", "Login Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -115,7 +115,9 @@ public class Login extends javax.swing.JPanel {
             return;
         }
 
-        if (BCrypt.checkpw(passwordText, user.getPassword())) {
+        String password = new String(passwordText);
+
+        if (BCrypt.checkpw(password, user.getPassword())) {
             sqlite.resetFailedLogin(username);
             sqlite.addLogs("INFO", username, "User successfully logged in.", new java.sql.Timestamp(new java.util.Date().getTime()).toString());
             JOptionPane.showMessageDialog(frame, "Login successful!");
@@ -127,7 +129,9 @@ public class Login extends javax.swing.JPanel {
         }
 
         // clear pass field
-        Arrays.fill(passwordText.toCharArray(), '0');
+        Arrays.fill(passwordText, '0');
+        passwordFld.setText("");
+        password = null;
 
 
     }//GEN-LAST:event_loginBtnActionPerformed
@@ -140,7 +144,7 @@ public class Login extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
     private javax.swing.JButton loginBtn;
-    private javax.swing.JTextField passwordFld;
+    private javax.swing.JPasswordField passwordFld;
     private javax.swing.JButton registerBtn;
     private javax.swing.JTextField usernameFld;
     // End of variables declaration//GEN-END:variables

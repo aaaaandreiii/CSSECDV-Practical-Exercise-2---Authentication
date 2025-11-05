@@ -305,9 +305,10 @@ public class Frame extends javax.swing.JFrame {
         frameView.show(Container, "registerPnl");
     }
     
-    public void registerAction(String username, String password, String confpass){
-        main.sqlite.addUser(username, password);
-    }
+    // DELETE, commented to simulate deletion
+    // public void registerAction(String username, String password, String confpass){
+    //     main.sqlite.addUser(username, password, );
+    // }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel Container;

@@ -216,8 +216,7 @@ public class SQLite {
     public boolean addUser(String username, String password, int role) {            //added role parameter
         String sql = "INSERT INTO users(username, password, role) VALUES(?, ?, ?)";
         String checkSql = "SELECT 1 FROM users WHERE username = ?";
-        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt(12));
-
+    
         try (Connection conn = DriverManager.getConnection(driverURL)) {
             // check if username is unique
             PreparedStatement checkStmt = conn.prepareStatement(checkSql);
@@ -233,7 +232,7 @@ public class SQLite {
             }
 
             insertStmt.setString(1, username);
-            insertStmt.setString(2, hashedPassword);
+            insertStmt.setString(2, password);
             insertStmt.setInt(3, role);                            //added role parameter
             insertStmt.executeUpdate();
 

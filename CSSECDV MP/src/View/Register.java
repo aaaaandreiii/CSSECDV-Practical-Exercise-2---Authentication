@@ -20,10 +20,10 @@ public class Register extends javax.swing.JPanel {
     private void initComponents() {
 
         registerBtn = new javax.swing.JButton();
-        passwordFld = new javax.swing.JTextField();
+        passwordFld = new javax.swing.JPasswordField();
         usernameFld = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
-        confpassFld = new javax.swing.JTextField();
+        confpassFld = new javax.swing.JPasswordField();
         backBtn = new javax.swing.JButton();
 
         registerBtn.setFont(new java.awt.Font("Tahoma", 1, 24)); // NOI18N
@@ -103,11 +103,10 @@ public class Register extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void registerBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_registerBtnActionPerformed
-        frame.registerAction(usernameFld.getText(), passwordFld.getText(), confpassFld.getText());
 
         String username = usernameFld.getText();
-        char[] password = passwordFld.getText().toCharArray();
-        char[] confPassword = confpassFld.getText().toCharArray();
+        char[] password = passwordFld.getPassword();
+        char[] confPassword = confpassFld.getPassword();
         boolean success = false;
 
         if (username.trim().isEmpty() || password.length == 0 || confPassword.length == 0) {
@@ -128,8 +127,9 @@ public class Register extends javax.swing.JPanel {
         }       
 
         // hashed pw
+        String hashedPassword = BCrypt.hashpw(passwordStr, BCrypt.gensalt(12));
         try{
-            success = frame.main.sqlite.addUser(username, passwordStr, 2);
+            success = frame.main.sqlite.addUser(username, hashedPassword, 2);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(frame, "Error during registration: " + e.getMessage(), "Registration Error", JOptionPane.ERROR_MESSAGE);
             return;
@@ -137,15 +137,13 @@ public class Register extends javax.swing.JPanel {
         
         if(success == true) {
             JOptionPane.showMessageDialog(frame, "Registration successful! Please log in.", "Success", JOptionPane.INFORMATION_MESSAGE);
-
-            // clear fields
-            Arrays.fill(password, '0');
-            Arrays.fill(confPassword, '0');
-
             frame.loginNav();
         } else {
             JOptionPane.showMessageDialog(frame, "Username '" + username + "' is already taken. Please choose another.", "Registration Failed", JOptionPane.ERROR_MESSAGE);
         }
+
+        Arrays.fill(password, '0');
+        Arrays.fill(confPassword, '0');
         
     }//GEN-LAST:event_registerBtnActionPerformed
 
@@ -156,9 +154,9 @@ public class Register extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton backBtn;
-    private javax.swing.JTextField confpassFld;
+    private javax.swing.JPasswordField confpassFld;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JTextField passwordFld;
+    private javax.swing.JPasswordField passwordFld;
     private javax.swing.JButton registerBtn;
     private javax.swing.JTextField usernameFld;
     // End of variables declaration//GEN-END:variables
